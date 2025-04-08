@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beveiligde Authenticatie Demo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/argon2-browser@1.18.0/dist/argon2-bundled.min.js"></script>
+</head>
+<body>
+    <!-- Home Pagina -->
+    <div id="homePage" class="page active">
+        <h1>Beveiligde Authenticatie Demo</h1>
+        <div class="card">
+            <p>Welkom bij de demonstratie van veilige authenticatie met Argon2id. Kies een optie:</p>
+            
+            <div class="home-buttons">
+                <button id="loginBtn" class="home-btn">Inloggen</button>
+                <button id="registerBtn" class="home-btn secondary">Registreren</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Over deze demo</h2>
+            <p>Deze demonstratie laat zien hoe wachtwoorden veilig worden opgeslagen met:</p>
+            <ul>
+                <li><strong>Argon2id</strong> - Moderne password hashing algoritme</li>
+                <li><strong>Salt waarden</strong> - Voorkomt rainbow table attacks</li>
+                <li><strong>Veilige opslag</strong> - Hoe hashes in databases worden bewaard</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Inlog Pagina -->
+    <div id="loginPage" class="page">
+        <h1>Inloggen</h1>
+        
+        <div class="error-message" id="loginError"></div>
+        <div class="success-message" id="loginSuccess"></div>
+        
+        <div class="card">
+            <div class="form-group">
+                <label for="loginEmail">E-mailadres</label>
+                <input type="email" id="loginEmail" placeholder="voorbeeld@email.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="loginPassword">Wachtwoord</label>
+                <input type="password" id="loginPassword" placeholder="Uw wachtwoord">
+            </div>
+            
+            <button id="doLogin">Inloggen</button>
+            <button class="gray" id="backToHomeFromLogin">Terug</button>
+        </div>
+        
+        <div class="card">
+            <h2>Hoe werkt veilig inloggen?</h2>
+            <p>Bij het inloggen:</p>
+            <ol>
+                <li>Het systeem haalt uw opgeslagen hash op</li>
+                <li>Dezelfde Argon2id parameters worden gebruikt</li>
+                <li>Het ingevoerde wachtwoord wordt gehasht</li>
+                <li>De hashes worden vergeleken</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Inlog Verificatie Pagina (NIEUW) -->
+    <div id="loginVerificationPage" class="page">
+        <h1>Inlog Verificatie</h1>
+        
+        <div class="card">
+            <h2>Stap 1: Gebruiker zoeken in database</h2>
+            <div class="database-visualization">
+                <div class="database-table">
+                    <div class="table-header">
+                        <div class="table-cell">id</div>
+                        <div class="table-cell">name</div>
+                        <div class="table-cell">email</div>
+                        <div class="table-cell">password_hash</div>
+                    </div>
+                    <div id="loginUserRow" class="table-row">
+                        <!-- Zal gevuld worden met gebruikersgegevens -->
+                    </div>
+                </div>
+            </div>
+            <div class="progress-container" id="userLookupProgress">
+                <div class="progress-bar" id="userLookupProgressBar">0%</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Stap 2: Hash vergelijking</h2>
+            <div class="comparison-container grid1">
+                <div class="comparison-item">
+                    <h3>Opgeslagen hash:</h3>
+                    <div class="code" id="storedHashDisplay">Laden...</div>
+                </div>
+                <div class="comparison-item grid2">
+                    <h3>Hash van ingevoerd wachtwoord:</h3>
+                    <div class="code" id="inputHashDisplay">Berekenen...</div>
+                </div>
+            </div>
+            <div class="progress-container" id="verificationProgress">
+                <div class="progress-bar" id="verificationProgressBar">0%</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Resultaat</h2>
+            <div id="loginVerificationResult" class="result-container">
+                <div class="loader"></div>
+                <p>Verificatie uitvoeren...</p>
+            </div>
+            <button id="afterLoginVerification" class="secondary" style="display: none;">Terug naar inloggen</button>
+        </div>
+    </div>
+
+    <!-- Registratie Pagina -->
+    <div id="registerPage" class="page">
+        <h1>Registreren</h1>
+        
+        <div class="error-message" id="registerError"></div>
+        <div class="success-message" id="registerSuccess"></div>
+        
+        <div class="card">
+            <div class="form-group">
+                <label for="registerName">Naam</label>
+                <input type="text" id="registerName" placeholder="Uw naam">
+            </div>
+            
+            <div class="form-group">
+                <label for="registerEmail">E-mailadres</label>
+                <input type="email" id="registerEmail" placeholder="voorbeeld@email.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="registerPassword">Wachtwoord</label>
+                <input type="password" id="registerPassword" placeholder="Minimaal 8 tekens">
+            </div>
+            
+            <div class="form-group">
+                <label for="registerPasswordConfirm">Bevestig wachtwoord</label>
+                <input type="password" id="registerPasswordConfirm" placeholder="Herhaal uw wachtwoord">
+            </div>
+            
+            <button id="doRegister" class="secondary">Registreren</button>
+            <button class="gray" id="backToHomeFromRegister">Terug</button>
+        </div>
+        
+        <div class="card">
+            <h2>Veilige registratie</h2>
+            <p>Bij registratie:</p>
+            <ol>
+                <li>Er wordt een cryptografische salt gegenereerd</li>
+                <li>Uw wachtwoord wordt gehasht met Argon2id</li>
+                <li>Alleen de hash wordt opgeslagen</li>
+                <li>Het originele wachtwoord wordt direct vergeten</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Hashing Animatie (voor registratie) -->
+    <div id="hashingPage" class="page">
+        <h1>Wachtwoord Beveiliging</h1>
+        
+        <div class="card">
+            <h2>Stap 1: Salt Genereren</h2>
+            <div class="progress-container" id="saltProgressContainer">
+                <div class="progress-bar" id="saltProgressBar">0%</div>
+            </div>
+            <div class="code" id="saltOutput">Bezig met genereren van cryptografische salt...</div>
+        </div>
+        
+        <div class="card">
+            <h2>Stap 2: Argon2id Parameters</h2>
+            <div class="code">
+                type: Argon2id<br>
+                memoryCost: 65536 (64MB)<br>
+                timeCost: 5 (iteraties)<br>
+                parallelism: 4<br>
+                hashLength: 32 bytes
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Stap 3: Hashing Uitvoeren</h2>
+            <div class="progress-container" id="hashProgressContainer">
+                <div class="progress-bar" id="hashProgressBar">0%</div>
+            </div>
+            <p>Dit kan enkele seconden duren (opzettelijk langzaam voor beveiliging).</p>
+        </div>
+        
+        <div class="card">
+            <h2>Stap 4: Opslaan in Database</h2>
+            <div class="code" id="hashOutput"></div>
+            <div class="success-message" id="hashingSuccess">
+                Registratie succesvol! U kunt nu inloggen.
+            </div>
+        </div>
+
+        <!-- NIEUW: Database visualisatie -->
+        <div class="card">
+            <h2>Stap 5: Database Opslag</h2>
+            <div class="database-visualization">
+                <div class="database-table">
+                    <div class="table-header">
+                        <div class="table-cell">id</div>
+                        <div class="table-cell">name</div>
+                        <div class="table-cell">email</div>
+                        <div class="table-cell">password_hash</div>
+                    </div>
+                    <div id="newUserRow" class="table-row new-row">
+                        <!-- Zal dynamisch gevuld worden -->
+                    </div>
+                </div>
+            </div>
+            <div class="database-table" style="margin-top: 20px;">
+                <div class="table-header">
+                    <div class="table-cell">id</div>
+                    <div class="table-cell">user_id</div>
+                    <div class="table-cell">salt</div>
+                </div>
+                <div id="newSaltRow" class="table-row new-row">
+                    <!-- Zal dynamisch gevuld worden -->
+                </div>
+            </div>
+            <div class="progress-container" id="dbStorageProgress">
+                <div class="progress-bar" id="dbStorageProgressBar">0%</div>
+            </div>
+            <button id="goToLoginAfterRegister" class="secondary">Naar inloggen</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}">
+    </script>
+</body>
+</html>
