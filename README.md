@@ -10,3 +10,6 @@ once started you should get a message like the one shown in the image below.<br>
 ![terminal message](image.png)
 
 go to the URL to use the website.
+
+## What is it?
+This is a simple website which shows you how salting and hashing work when signing up and signing in.
