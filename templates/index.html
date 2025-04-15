@@ -10,10 +10,17 @@
 <body>
     <!-- Home Pagina -->
     <div id="homePage" class="page active">
-        <h1>Beveiligde Authenticatie Demo</h1>
+        <h1>Hoe beveiligen bedrijven gevoelige data?</h1>
         <div class="card">
-            <p>Welkom bij de demonstratie van veilige authenticatie met Argon2id. Kies een optie:</p>
-            
+            <p>In deze demonstratie zie je een van de manieren waarop bedrijven gevoelige data opslaan.</p>
+            <p>De beveiligingsmethoden die in deze demonstrator aanwezig zijn, zijn:</p>
+            <ul>
+                <li>Salting</li>
+                <li>Salting is het genereren van een willekeurig aantal karakters (cijfers of letters) dat vóór het hashen wordt toegevoegd aan de gevoelige data.</li>
+                <li>Hashing</li>
+                <li>Hashing gebeurt met een algoritme waarbij bijvoorbeeld een zin wordt omgezet in een grote hoeveelheid willekeurige karakters, waardoor je het wachtwoord niet kunt lezen.</li>
+            </ul>
+            <p>De demonstratie laat zien hoe dit werkt met Argon2 (een hashing-algoritme). Kies een optie:</p>
             <div class="home-buttons">
                 <button id="loginBtn" class="home-btn">Inloggen</button>
                 <button id="registerBtn" class="home-btn secondary">Registreren</button>
@@ -118,7 +125,7 @@
 
     <!-- Registratie Pagina -->
     <div id="registerPage" class="page">
-        <h1>Registreren</h1>
+        <h1>Registreren (niet je echte wachtwoord gebruiken)</h1>
         
         <div class="error-message" id="registerError"></div>
         <div class="success-message" id="registerSuccess"></div>

@@ -165,7 +165,6 @@ def hash_demo():
 
 @app.route('/test-login', methods=['POST'])
 def test_login():
-    # Voor de frontend demoversie
     email = request.json.get('email')
     password = request.json.get('password')
     
@@ -174,21 +173,29 @@ def test_login():
     
     conn = sqlite3.connect('users.db')
     c = conn.cursor()
-    c.execute("SELECT u.id, u.password_hash, s.salt FROM users u LEFT JOIN user_salts s ON u.id = s.user_id WHERE u.email = ?", (email,))
+    c.execute("""
+        SELECT u.id, u.name, u.password_hash, s.salt 
+        FROM users u 
+        LEFT JOIN user_salts s ON u.id = s.user_id 
+        WHERE u.email = ?
+    """, (email,))
     result = c.fetchone()
     conn.close()
     
     if not result:
-        return jsonify({"success": False, "message": "E-mailadres niet gevonden"}), 401
+        return jsonify({"success": False, "message": "Combinatie e-mailadres en wachtwoord niet gevonden"}), 401
     
     try:
-        ph.verify(result[1], password)
+        ph.verify(result[2], password)
         return jsonify({
             "success": True, 
             "message": "Inloggen succesvol",
+            "user_id": result[0],
+            "user_name": result[1],
+            "full_hash": result[2],  # Nu inclusief de echte hash
             "salt_info": {
-                "stored_separately": result[2] is not None,
-                "salt_value": result[2] if result[2] else extract_salt_from_hash(result[1])
+                "stored_separately": result[3] is not None,
+                "salt_value": result[3] if result[3] else extract_salt_from_hash(result[2])
             }
         })
     except:
